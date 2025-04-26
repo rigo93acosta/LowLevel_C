@@ -6,6 +6,16 @@
 #include "file.h"
 #include "parse.h"
 
+void list_employees(struct dbheader_t *dbhdr, struct employee_t *employees){
+    int i =0;
+    for(; i < dbhdr->count; i++){
+        printf("Employee %d:\n", i);
+        printf("\tName: %s\n", employees[i].name);
+        printf("\tAddress: %s\n", employees[i].address);
+        printf("\tHours: %u\n", employees[i].hours);
+    }
+}
+
 static void print_usage(char const *argv[]){
     printf("Usage: %s -n -f <database file>\n", argv[0]);
     printf("\t -n - create new database file\n");
@@ -18,12 +28,13 @@ int main(int argc, char *argv[])
     char *filepath = NULL;
     bool newfile = false;
     char *addstring = NULL;
+    bool list = false;
 
     int dbfd = -1;
     struct dbheader_t *dbhdr = NULL;
     struct employee_t *employees = NULL;
 
-    while ((c = getopt(argc, argv, "nf:a:")) != -1)
+    while ((c = getopt(argc, argv, "nf:a:l")) != -1)
     {   
         switch(c){
             
@@ -35,6 +46,9 @@ int main(int argc, char *argv[])
                 break; 
             case 'a':
                 addstring = optarg;
+                break;
+            case 'l':
+                list = true;
                 break;
             case '?':
                 printf("Unknown option: -%c\n", c);
@@ -87,6 +101,10 @@ int main(int argc, char *argv[])
         dbhdr->count++;
         employees = realloc(employees, dbhdr->count * (sizeof(struct employee_t)));
         add_employee(dbhdr, employees, addstring);
+    }
+
+    if (list){
+        list_employees(dbhdr, employees);
     }
 
     output_file(dbfd, dbhdr, employees);
